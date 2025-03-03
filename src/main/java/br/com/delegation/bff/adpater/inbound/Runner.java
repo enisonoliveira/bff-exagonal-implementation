@@ -1,4 +1,4 @@
-package br.com.delegation.bff.controller;
+package br.com.delegation.bff.adpater.inbound;
 
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.delegation.bff.service.ProcessService;
+import br.com.delegation.bff.core.service.ProcessService;
 import reactor.core.publisher.Mono;
 
 @RestController

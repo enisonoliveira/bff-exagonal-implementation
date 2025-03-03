@@ -1,9 +1,10 @@
-package br.com.delegation.bff.service;
+package br.com.delegation.bff.core.service;
 
 
-import  br.com.delegation.bff.processor.Processor;
-import  br.com.delegation.bff.dispatcher.Dispatcher;
 import org.springframework.stereotype.Service;
+
+import  br.com.delegation.bff.core.processor.Processor;
+import br.com.delegation.bff.dispatcher.Dispatcher;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -19,7 +20,7 @@ public class ProcessService {
 
     // Método genérico para processar qualquer tipo de entrada e saída
     public <T, R> Mono<String> processarRequisicao(Object requestBody, Class<T> requestType, Class<R> responseType, String backendUrl) {
-        return processor.processarFluxo(requestBody, requestType, responseType, backendUrl)
+        return processor.processarFluxoGenerico(requestBody, requestType, responseType, backendUrl)
                 .map(dispatcher::despacharMensagem)
                 .onErrorResume(e -> Mono.just("Erro ao processar a solicitação: " + e.getMessage()));
     }

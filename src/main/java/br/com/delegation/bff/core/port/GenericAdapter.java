@@ -1,4 +1,4 @@
-package br.com.delegation.bff.adpater;
+package br.com.delegation.bff.core.port;
 
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ class ResponseAdaptationException extends RuntimeException {
 }
 
 @Component
-public class ControllerAdapter {
+public class GenericAdapter {
 
     // Método para adaptar o corpo da requisição para o tipo desejado
     public <T> T adaptarEntrada(Object input, Class<T> inputClass) {
@@ -65,7 +65,7 @@ public class ControllerAdapter {
 
     // Adaptar a mensagem de erro
     @SuppressWarnings("unchecked")
-    public <T> T adaptarMensagemErro(String message) {
+    public static <T> T adaptarMensagemErro(String message) {
         // A conversão explícita é necessária, pois T será tratado como String
         return (T) ("Erro: " + message);
     }
