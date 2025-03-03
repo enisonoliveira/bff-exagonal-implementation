@@ -1,21 +1,24 @@
-package br.com.delegation.bff.core.processor;
+package br.com.delegation.bff.core.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import br.com.delegation.bff.core.port.AdapterPort;
 import br.com.delegation.bff.core.port.GenericAdapter;
+import br.com.delegation.bff.core.service.Processor;
 import reactor.core.publisher.Mono;
 
-@Component
-public class Processor {
+@Service
+public class ProcessorImpl implements  Processor {
 
-    private final WebClient webClient;
+    private  WebClient webClient;
     private final AdapterPort adapter;
     private final GenericAdapter genericAdapter;
 
-    public Processor(WebClient webClient, AdapterPort adapter, GenericAdapter genericAdapter) {
-        this.webClient = webClient;
+    @Autowired
+    public ProcessorImpl(AdapterPort adapter, GenericAdapter genericAdapter) {
         this.adapter = adapter;
         this.genericAdapter = genericAdapter;
     }
@@ -66,6 +69,6 @@ public class Processor {
                 .retrieve()
                 .bodyToMono(Object.class)  // Retorna a resposta como um tipo genérico (Object)
                 .map(response -> genericAdapter.adaptarResposta(response, responseType)) // Adapta a resposta para o tipo genérico
-                .onErrorResume(e -> Mono.just(GenericAdapter.adaptarMensagemErro(e.getMessage()))); // Tratamento de erro
+                .onErrorResume(e -> Mono.just(adapter.adaptarMensagemErro(e.getMessage()))); // Tratamento de erro
     }
 }

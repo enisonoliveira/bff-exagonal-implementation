@@ -12,11 +12,11 @@ import br.com.delegation.bff.core.service.Processor;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class Runner {
+public class RunController {
 
     private final Processor processor;
 
-    public Runner(Processor processor) {
+    public RunController(Processor processor) {
         this.processor = processor;
     }
 

@@ -1,9 +1,12 @@
 package br.com.delegation.bff.core.dto;
 
+import org.springframework.stereotype.Component;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+@Component
 public class UserRequest {
 
     @NotNull(message = "O nome não pode ser nulo")
