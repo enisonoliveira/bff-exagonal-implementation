@@ -54,9 +54,11 @@ class RunControllerTest {
 
     @Test
     void testObterDados() {
+
         UserRequest userRequest = new UserRequest();
         userRequest.setEmail("testuser@example.com");
         userRequest.setName("Enison Oliveira");
+        
         UserResponse mockResponse = new UserResponse("Enison", "enisonoliveira@hotmail.com");
 
         when(processorUserService.processarFluxoEspecifico(any(), any()))
@@ -72,21 +74,26 @@ class RunControllerTest {
 
                 .value(response -> {
                     assertEquals(mockResponse.getName(), response.getName());
-                }) ; 
+                });
     }
 
     @Test
     void testObterDadosGenerico() throws Exception {
+
         String fakeResponse = "{\"message\":\"Success\"}";
+
         mockWebServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .setBody(fakeResponse)
                 .addHeader("Content-Type", "application/json"));
+
         ObjectNode userRequest = objectMapper.createObjectNode();
         userRequest.put("username", "testuser");
         userRequest.put("email", "testuser@example.com");
+
         when(processor.obterDadosGenerico(any(), any()))
                 .thenReturn(fakeResponse);
+
         webTestClient.post()
                 .uri("/api/aggregated/generic?backendUrl=http://localhost:8080")
                 .contentType(MediaType.APPLICATION_JSON)
