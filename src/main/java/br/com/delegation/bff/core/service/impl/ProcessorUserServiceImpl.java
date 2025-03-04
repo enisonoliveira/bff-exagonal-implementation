@@ -32,6 +32,7 @@ public class ProcessorUserServiceImpl implements  ProcessorUserService {
      * @param <R> Tipo de saída específico.
      * @return Mono com a resposta do backend adaptada.
      */
+    @Override
     public <T, R> Mono<R> processarFluxoEspecifico(Object requestBody, Class<T> requestType, Class<R> responseType, String backendUrl) {
         // Adapta o corpo de entrada para o tipo específico
         T adaptedInput = adapter.adaptarEntrada(requestBody, requestType);
