@@ -4,10 +4,10 @@ package br.com.delegation.bff.adpater.outbound;
 import org.springframework.stereotype.Component;
 
 import br.com.delegation.bff.adpater.outbound.erro.ErrorResponse;
-import br.com.delegation.bff.core.port.AdapterPort;
+import br.com.delegation.bff.core.port.AdapterPortUserService;
 
 @Component
-public class UserAdapter implements AdapterPort {
+public class UserAdapterPortUser implements AdapterPortUserService {
 
     @Override
     public <T> T adaptarEntrada(Object requestBody, Class<T> requestType) {

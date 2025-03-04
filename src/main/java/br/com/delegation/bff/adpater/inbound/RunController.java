@@ -9,15 +9,19 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.delegation.bff.core.dto.UserRequest;
 import br.com.delegation.bff.core.dto.UserResponse;
 import br.com.delegation.bff.core.service.Processor;
+import br.com.delegation.bff.core.service.ProcessorUserService;
 import reactor.core.publisher.Mono;
 
 @RestController
 public class RunController {
 
     private final Processor processor;
+    private final ProcessorUserService processorUserService;
 
-    public RunController(Processor processor) {
+
+    public RunController(Processor processor,ProcessorUserService processorUserService) {
         this.processor = processor;
+        this.processorUserService=processorUserService;
     }
 
     /**
@@ -31,7 +35,7 @@ public class RunController {
             @RequestParam String backendUrl) {    // URL do backend para onde a requisição será feita
 
         // Chama o método de processamento específico, passando as classes de DTO diretamente
-        return processor.processarFluxoEspecifico(userRequest, UserRequest.class, UserResponse.class, backendUrl);
+        return processorUserService.processarFluxoEspecifico(userRequest, UserRequest.class, UserResponse.class, backendUrl);
     }
 
     
