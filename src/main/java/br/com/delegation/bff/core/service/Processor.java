@@ -1,7 +1,8 @@
 package br.com.delegation.bff.core.service;
 
-import reactor.core.publisher.Mono;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public interface  Processor {
-        <T, R> Mono<R> processarFluxoGenerico(Object requestBody, Class<T> requestType, Class<R> responseType, String backendUrl) ;
+    public String obterDadosGenerico( ObjectNode userRequest,  String backendUrl);
+
 }

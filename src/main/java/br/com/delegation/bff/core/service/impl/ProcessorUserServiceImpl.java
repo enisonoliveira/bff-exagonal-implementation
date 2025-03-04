@@ -1,29 +1,41 @@
 package br.com.delegation.bff.core.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
-import br.com.delegation.bff.core.port.AdapterPortUserService;
+import br.com.delegation.bff.core.dto.UserRequest;
 import br.com.delegation.bff.core.service.ProcessorUserService;
 import reactor.core.publisher.Mono;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import br.com.delegation.bff.core.dto.UserResponse;
+import br.com.delegation.bff.core.port.GenericAdapter;
+import br.com.delegation.bff.core.port.UserAdapterPortUser;
+
 @Service
-public class ProcessorUserServiceImpl implements  ProcessorUserService {
+public class ProcessorUserServiceImpl implements ProcessorUserService {
 
-    private  final WebClient webClient;
-    private final AdapterPortUserService adapter ;
+    private final WebClient webClient;
 
-   @Autowired
-    public ProcessorUserServiceImpl(AdapterPortUserService adapter,WebClient webClient) {
-        this.adapter = adapter;
-        this.webClient=webClient;
+    private final UserAdapterPortUser userAdapterPortUser;
+
+    private final GenericAdapter genericAdapter;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorUserServiceImpl.class);  // Adicionando o logger
+
+    public ProcessorUserServiceImpl( WebClient webClient,UserAdapterPortUser userAdapterPortUser, GenericAdapter genericAdapter) {
+        this.webClient = webClient;
+        this.userAdapterPortUser=userAdapterPortUser;
+        this.genericAdapter=genericAdapter;
     }
 
-
-     /**
+    /**
      * Processa o fluxo com entrada e saída específicas.
-     * 
+     *
      * @param requestBody Corpo da requisição.
      * @param requestType Tipo esperado para a requisição (específico).
      * @param responseType Tipo esperado para a resposta (específico).
@@ -33,16 +45,28 @@ public class ProcessorUserServiceImpl implements  ProcessorUserService {
      * @return Mono com a resposta do backend adaptada.
      */
     @Override
-    public <T, R> Mono<R> processarFluxoEspecifico(Object requestBody, Class<T> requestType, Class<R> responseType, String backendUrl) {
+    public  Mono<UserResponse> processarFluxoEspecifico(UserRequest requestBody, String backendUrl) {
         // Adapta o corpo de entrada para o tipo específico
-        T adaptedInput = adapter.adaptarEntrada(requestBody, requestType);
-        // Faz a requisição para o backend com WebClient
-        return webClient.post()
-                .uri(backendUrl)  // URL dinâmica
-                .bodyValue(adaptedInput)  // Envia o corpo de entrada adaptado
+        UserRequest adaptedInput = genericAdapter.adaptarEntrada(requestBody, UserRequest.class);
+        try {
+     
+  // Fazer a requisição para o backend com WebClient
+        return webClient.get()
+                .uri(backendUrl) // URL dinâmica
+               // .bodyValue(adaptedInput) // Envia o corpo de entrada adaptado
                 .retrieve()
-                .bodyToMono(responseType)  // Retorna a resposta já como tipo específico
-                .onErrorResume(e -> Mono.just(adapter.adaptarMensagemErro(e.getMessage())));  // Tratamento de erro
-    }
+                .bodyToMono(UserResponse.class) // Retorna a resposta já como tipo específico
+                .doOnSubscribe(subscription -> {
+                    // Logando quando a requisição começa
+                    logger.info("Iniciando requisição para: {}", backendUrl);
+                    logger.info("Corpo da requisição: {}", adaptedInput);
+                });
+               
+              
+            } catch (Exception e) {
+                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
 
+
+            }
+    }
 }

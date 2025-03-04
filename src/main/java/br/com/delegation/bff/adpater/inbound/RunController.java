@@ -1,10 +1,20 @@
 package br.com.delegation.bff.adpater.inbound;
 
+
+import java.util.Collections;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import br.com.delegation.bff.core.dto.UserRequest;
 import br.com.delegation.bff.core.dto.UserResponse;
@@ -18,37 +28,35 @@ public class RunController {
     private final Processor processor;
     private final ProcessorUserService processorUserService;
 
-
-    public RunController(Processor processor,ProcessorUserService processorUserService) {
+    public RunController(Processor processor, ProcessorUserService processorUserService) {
         this.processor = processor;
-        this.processorUserService=processorUserService;
+        this.processorUserService = processorUserService;
     }
 
     /**
      * Controlador para processar a requisição com tipos específicos de DTOs. A
      * entrada e saída são forçadas a usar UserRequest e UserResponse.
      */
-    @GetMapping("/api/aggregated")
+    @PostMapping("/api/aggregated")
     public Mono<UserResponse> obterDados(
             @Validated
-             @RequestBody UserRequest userRequest, // Forçando o uso do DTO UserRequest
+            @RequestBody UserRequest userRequest, // Forçando o uso do DTO UserRequest
             @RequestParam String backendUrl) {    // URL do backend para onde a requisição será feita
 
         // Chama o método de processamento específico, passando as classes de DTO diretamente
-        return processorUserService.processarFluxoEspecifico(userRequest, UserRequest.class, UserResponse.class, backendUrl);
+        return processorUserService.processarFluxoEspecifico(userRequest, backendUrl);
     }
-
-    
 
     /**
-     * Controlador para processar requisiçõe m fluxo genérico (sem tipos específicos definidos).
+     * Controlador para processar requisiçõe m fluxo genérico (sem tipos
+     * específicos definidos).
      */
-    @GetMapping("/api/aggregated/generic")
-    public Mono<Object> obterDadosGenerico(
-             @RequestBody Object userRequest,    // Entrada genérica de dados
+    @PostMapping("/api/aggregated/generic")
+    public String obterDadosGenerico(
+            @RequestBody ObjectNode userRequest, // Usando ObjectNode
             @RequestParam String backendUrl) {  // URL do backend
 
-        // Chama o método de processamento genérico
-        return processor.processarFluxoGenerico(userRequest, Object.class, Object.class, backendUrl);
+        return processor.obterDadosGenerico(userRequest,  backendUrl);
     }
+
 }

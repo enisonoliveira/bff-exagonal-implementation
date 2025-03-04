@@ -1,10 +1,15 @@
 package br.com.delegation.bff.core.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
-import br.com.delegation.bff.core.port.AdapterPortUserService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import br.com.delegation.bff.core.port.GenericAdapter;
 import br.com.delegation.bff.core.service.Processor;
 import reactor.core.publisher.Mono;
@@ -12,13 +17,12 @@ import reactor.core.publisher.Mono;
 @Service
 public class ProcessorImpl implements  Processor {
 
-    private  WebClient webClient;
-    private final AdapterPortUserService adapter;
+    private  final WebClient webClient;
     private final GenericAdapter genericAdapter;
 
     @Autowired
-    public ProcessorImpl(AdapterPortUserService adapter, GenericAdapter genericAdapter) {
-        this.adapter = adapter;
+    public ProcessorImpl(GenericAdapter genericAdapter,WebClient webClient) {
+        this.webClient = webClient;
         this.genericAdapter = genericAdapter;
     }
 
@@ -34,17 +38,30 @@ public class ProcessorImpl implements  Processor {
      * @param <R> Tipo de saída genérico.
      * @return Mono com a resposta do backend adaptada.
      */
-    public <T, R> Mono<R> processarFluxoGenerico(Object requestBody, Class<T> requestType, Class<R> responseType, String backendUrl) {
-        // Adapta o corpo de entrada para o tipo genérico
-        T adaptedInput = genericAdapter.adaptarEntrada(requestBody, requestType);
-
-        // Faz a requisição para o backend com WebClient
-        return webClient.post()
-                .uri(backendUrl)  // URL dinâmica
-                .bodyValue(adaptedInput)  // Envia o corpo de entrada adaptado
-                .retrieve()
-                .bodyToMono(Object.class)  // Retorna a resposta como um tipo genérico (Object)
-                .map(response -> genericAdapter.adaptarResposta(response, responseType)) // Adapta a resposta para o tipo genérico
-                .onErrorResume(e -> Mono.just(adapter.adaptarMensagemErro(e.getMessage()))); // Tratamento de erro
+    @Override
+    public String obterDadosGenerico( ObjectNode userRequest,  String backendUrl) {
+        try {
+            // Convert requestBody to JsonNode or any other appropriate type
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.valueToTree(userRequest);
+            
+            // Example: modify jsonNode if needed
+            if (jsonNode instanceof ObjectNode) {
+                ObjectNode objectNode = (ObjectNode) jsonNode;
+                objectNode.put("newField", "value");
+            }
+    
+            // Use WebClient to send the request
+            return  webClient.post()
+                    .uri(backendUrl)
+                    .bodyValue(jsonNode)  // Body is a JsonNode or ObjectNode
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+        }
     }
+    
 }
+
